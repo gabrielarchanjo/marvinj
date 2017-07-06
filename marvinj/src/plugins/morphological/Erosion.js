@@ -11,8 +11,8 @@
 	
 	Erosion.prototype.process = function
 	(
-		imageIn, 
-		imageOut,
+		imgIn, 
+		imgOut,
 		attributesOut,
 		mask, 
 		previewMode

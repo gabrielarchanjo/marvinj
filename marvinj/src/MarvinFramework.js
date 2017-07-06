@@ -15,6 +15,17 @@ marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.blackAndWhite.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// BoundaryFill
+	Marvin.plugins.boundaryFill = new BoundaryFill();
+	Marvin.boundaryFill = function(imageIn, imageOut, x, y, color, threshold){
+		Marvin.plugins.boundaryFill.setAttribute("x", x);
+		Marvin.plugins.boundaryFill.setAttribute("y", y);
+		Marvin.plugins.boundaryFill.setAttribute("color", color);
+		if(threshold != null){	Marvin.plugins.boundaryFill.setAttribute("threshold", threshold);	}
+		
+		Marvin.plugins.boundaryFill.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// Brightness and Contrast
 	Marvin.plugins.brightnessAndContrast = new BrightnessAndContrast();
 	Marvin.brightnessAndContrast = function(imageIn, imageOut, brightness, contrast){
@@ -38,10 +49,19 @@ marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.emboss.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Floodfill Segmentation
+	Marvin.plugins.floodfillSegmentation = new FloodfillSegmentation();
+	Marvin.floodfillSegmentation = function(imageIn){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.floodfillSegmentation.setAttribute("returnType", "MarvinSegment");
+		Marvin.plugins.floodfillSegmentation.process(imageIn, null, attrOut, MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("segments");
+	};
+	
 	// Gaussian Blur
 	Marvin.plugins.gaussianBlur = new GaussianBlur();
 	Marvin.gaussianBlur = function(imageIn, imageOut, radius){
-		Marvin.plugins.gaussianBlur.setAttribute("radius", radius);
+		Marvin.plugins.gaussianBlur.setAttribute("radius", Marvin.getValue(radius, 3.0));
 		Marvin.plugins.gaussianBlur.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
@@ -64,18 +84,36 @@ marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.morphologicalDilation.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Morphological Erosion
+	Marvin.plugins.morphologicalErosion = new Erosion();
+	Marvin.morphologicalErosion = function(imageIn, imageOut, matrix){
+		Marvin.plugins.morphologicalErosion.setAttribute("matrix", matrix);
+		Marvin.plugins.morphologicalErosion.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Morphological Closing
+	Marvin.plugins.morphologicalClosing = new Closing();
+	Marvin.morphologicalClosing = function(imageIn, imageOut, matrix){
+		Marvin.plugins.morphologicalClosing.setAttribute("matrix", matrix);
+		Marvin.plugins.morphologicalClosing.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// Prewitt
 	Marvin.plugins.prewitt = new Prewitt();
 	Marvin.prewitt = function(imageIn, imageOut, intensity){
-		if(intensity != null){
-			Marvin.plugins.prewitt.setAttribute("intensity", intensity);
-		}
+		Marvin.plugins.prewitt.setAttribute("intensity", Marvin.getValue(intensity, 1.0));
 		Marvin.plugins.prewitt.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
 	// Scale
 	Marvin.plugins.scale = new Scale();
 	Marvin.scale = function(imageIn, imageOut, newWidth, newHeight){
+	
+		if(newHeight == null){
+			var factor = imageIn.getHeight() / imageIn.getWidth();
+			newHeight = Math.floor(factor * newWidth);
+		}
+	
 		Marvin.plugins.scale.setAttribute("newWidth", newWidth);
 		Marvin.plugins.scale.setAttribute("newHeight", newHeight);
 		Marvin.plugins.scale.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
@@ -107,4 +145,13 @@ marvinLoadPluginMethods = function(callback){
 }
 
 var Marvin = new Object();
+
+Marvin.getValue = function(value, defaultValue){
+	if(value != null){
+		return value;
+	} else {
+		return defaultValue;
+	}
+}
+
 marvinLoadPluginMethods();

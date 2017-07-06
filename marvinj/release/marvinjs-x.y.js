@@ -1,27 +1,4 @@
 
-
-function MarvinColor(red, green, blue){
-	this.red = red;
-	this.green = green;
-	this.blue = blue;
-	return this;
-}
-
-MarvinColor.prototype.setId = function(id){
-	this.id = id;
-};
-
-MarvinColor.prototype.getId = function(){
-	return this.id;
-};
-
-MarvinColor.prototype.setName = function(name){
-	this.name = name;
-};
-
-MarvinColor.prototype.getName = function(){
-	return this.name;
-};
 function MarvinColorModelConverter(){}
 
 MarvinColorModelConverter.rgbToBinary = function(img, threshold){		
@@ -149,6 +126,12 @@ function MarvinImage(width, height, colorModel){
 	this.ctx=null;
 	this.data = null;
 	
+	if(colorModel == null){
+		this.colorModel = MarvinImage.COLOR_MODEL_RGB;
+	} else{
+		this.colorModel = colorModel;
+	}
+	
 	if(width != null){
 		this.create(width, height);
 	}
@@ -204,10 +187,8 @@ MarvinImage.prototype.callbackImageLoaded = function(marvinImage){
 };
 
 MarvinImage.prototype.clone = function(){
-	var image = new MarvinImage(this.getWidth(), this.getHeight());
-	for(var i in this.imageData.data){
-		image.imageData.data[i] = this.imageData.data[i];
-	}
+	var image = new MarvinImage(this.getWidth(), this.getHeight(), this.colorModel);
+	MarvinImage.copyColorArray(this, image);
 	return image;
 };
 
@@ -217,6 +198,10 @@ MarvinImage.prototype.clear = function(color){
 			this.setIntColor(x,y,color);
 		}
 	}
+};
+
+MarvinImage.prototype.getColorModel = function(){
+	return this.colorModel;
 };
 
 MarvinImage.prototype.getAlphaComponent = function(x,y){
@@ -281,6 +266,24 @@ MarvinImage.prototype.getBinaryColor = function(x,y){
 	return this.arrBinaryColor[pos];
 };
 
+MarvinImage.copyColorArray = function(imgSource, imgDestine){
+		
+	if(imgSource.getColorModel() == imgDestine.getColorModel()){
+		switch(imgSource.getColorModel()){
+			case MarvinImage.COLOR_MODEL_RGB:
+				for(var i in imgSource.imageData.data){
+					imgDestine.imageData.data[i] = imgSource.imageData.data[i];
+				}
+				break;
+			case MarvinImage.COLOR_MODEL_BINARY:
+				for(var i in imgSource.arrBinaryColor){
+					imgDestine.arrBinaryColor[i] = imgSource.arrBinaryColor[i];
+				}
+				break;
+		}
+	}
+};
+
 MarvinImage.prototype.drawRect = function(x,y, width, height, color){
 	for(var i=x; i<x+width; i++){
 		this.setIntColor(i, y, color);
@@ -328,6 +331,13 @@ MarvinImage.prototype.getWidth = function(){
 
 MarvinImage.prototype.getHeight = function(){
 	return this.height;
+};
+
+MarvinImage.prototype.isValidPosition = function(x, y){
+	if(x >= 0 && x < this.width && y >= 0 && y < this.height){
+		return true;
+	}
+	return false;
 };
 
 MarvinImage.prototype.draw = function(canvas, x, y){
@@ -392,6 +402,59 @@ MarvinImage.prototype.draw = function(canvas, x, y){
 
 	MarvinImageMask.NULL_MASK = MarvinImageMask.createNullMask();
 
+
+	function MarvinSegment(x1, y1, x2, y2){
+		this.x1 = -1;
+		this.x2 = -1;
+		this.y1 = -1;
+		this.y2 = -1;
+		
+		if(x1 != -1 && y1 != -1 && x2 != -1 && y2 != -1){
+			this.width = (x2-x1)+1;
+			this.height = (y2-y1)+1;
+			this.area = this.width*this.height;
+		}
+	}
+	
+	MarvinSegment.segmentMinDistance = function(segments, minDistance){
+		var s1,s2;
+		for(var i=0; i<segments.size()-1; i++){
+			for(var j=i+1; j<segments.size(); j++){
+				s1 = segments[i];
+				s2 = segments[j];
+				
+				if(MarvinMath.euclidianDistance( (s1.x1+s1.x2)/2, (s1.y1+s1.y2)/2, (s2.x1+s2.x2)/2, (s2.y1+s2.y2)/2 ) < minDistance){
+					segments.splice(j, 1);
+					j--;
+				}
+			}
+		}
+	}
+
+
+
+function MarvinColor(red, green, blue){
+	this.red = red;
+	this.green = green;
+	this.blue = blue;
+	return this;
+}
+
+MarvinColor.prototype.setId = function(id){
+	this.id = id;
+};
+
+MarvinColor.prototype.getId = function(){
+	return this.id;
+};
+
+MarvinColor.prototype.setName = function(name){
+	this.name = name;
+};
+
+MarvinColor.prototype.getName = function(){
+	return this.name;
+};
 var MarvinJSUtils = new Object();
 
 MarvinJSUtils.createMatrix2D = function(rows, cols, value){
@@ -438,7 +501,21 @@ MarvinMath.scaleMatrix = function(matrix, scale){
 	return ret;
 };
 
-MarvinMath.euclideanDistance = function(x1, y1, z1, x2, y2, z2){
+MarvinMath.euclidianDistance = function(p1, p2, p3, p4, p5, p6){
+	if(p6 != null){
+		return MarvinMath.euclideanDistance3D(p1, p2, p3, p4, p5, p6);
+	} else{
+		return MarvinMath.euclideanDistance3D(p1, p2, p3, p4);
+	}
+};
+
+MarvinMath.euclidianDistance2D = function(x1, y1, x2, y2){
+	var dx = (x1-x2);
+	var dy = (y1-y2);
+	return Math.sqrt( dx*dx + dy*dy);
+};
+
+MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 	var dx = (x1-x2);
 	var dy = (y1-y2);
 	var dz = (z1-z2);
@@ -1319,6 +1396,125 @@ MarvinMath.euclideanDistance = function(x1, y1, z1, x2, y2, z2){
 		}
     };
 
+	function BoundaryFill(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+	
+	BoundaryFill.prototype.load = function(){
+		this.setAttribute("x", 0);
+		this.setAttribute("y", 0);
+		this.setAttribute("color", 0xFFFF0000);
+		this.setAttribute("tile", null);
+		this.setAttribute("threshold", 0);
+	};
+
+	BoundaryFill.prototype.process = function
+	(
+		imgIn, 
+		imgOut,
+		attributesOut,
+		mask, 
+		previewMode
+	)
+	{
+		var l_list = new Array();
+    	var 	l_point,
+    			l_pointW,
+    			l_pointE;
+    
+    	//MarvinImage.copyColorArray(imgIn, imgOut);
+    	
+    	var x = this.getAttribute("x");
+    	var y = this.getAttribute("y");
+    	var tileImage = this.getAttribute("tile");
+    	this.threshold = this.getAttribute("threshold");
+    	
+    	if(!imgOut.isValidPosition(x, y)){
+    		return;
+    	}
+    	
+    	var targetColor = imgIn.getIntColor(x, y);
+    	var targetRed = imgIn.getIntComponent0(x, y);
+    	var targetGreen = imgIn.getIntComponent1(x, y);
+    	var targetBlue = imgIn.getIntComponent2(x, y);
+    	var color = this.getAttribute("color");
+    	var newColor = color;
+    	
+    	var fillMask = MarvinJSUtils.createMatrix2D(imgOut.getWidth(), imgOut.getHeight, false);
+    	fillMask[x][y] = true;
+    	
+    	
+    	l_list.push(new MarvinPoint(x, y));
+    	
+    	//for(var l_i=0; l_i<l_list.size(); l_i++){
+    	while(l_list.length > 0){
+			l_point = l_list.splice(0,1)[0];	// list poll
+    		l_pointW = new MarvinPoint(l_point.x, l_point.y);
+    		l_pointE = new MarvinPoint(l_point.x, l_point.y);
+    		
+    		// west
+    		while(true){
+    			if(l_pointW.x-1 >= 0 && this.match(imgIn, l_pointW.x-1, l_pointW.y, targetRed, targetGreen, targetBlue, this.threshold) && !fillMask[l_pointW.x-1][l_pointW.y]){
+    				l_pointW.x--;
+    			}
+    			else{
+    				break;
+    			}
+    		 }
+    		
+    		// east
+    		while(true){
+    			if(l_pointE.x+1 < imgIn.getWidth() && this.match(imgIn, l_pointE.x+1, l_pointE.y, targetRed, targetGreen, targetBlue, this.threshold) && !fillMask[l_pointE.x+1][l_pointE.y]){
+    				l_pointE.x++;
+    			}
+    			else{
+    				break;
+    			}
+    		 }
+    		
+    		// set color of pixels between pointW and pointE
+    		for(var l_px=l_pointW.x; l_px<=l_pointE.x; l_px++){
+    			//imgOut.setIntColor(l_px, l_point.y, -1);
+    			//drawPixel(imgOut, l_px, l_point.y, newColor, tileImage);
+    			fillMask[l_px][l_point.y] = true;
+    			
+    			if(l_point.y-1 >= 0 && this.match(imgIn, l_px, l_point.y-1, targetRed, targetGreen, targetBlue, this.threshold) && !fillMask[l_px][l_point.y-1]){
+    				l_list.push(new MarvinPoint(l_px, l_point.y-1));
+    			}
+    			if(l_point.y+1 < imgOut.getHeight() && this.match(imgIn, l_px, l_point.y+1, targetRed, targetGreen, targetBlue, this.threshold) && !fillMask[l_px][l_point.y+1]){
+    				l_list.push(new MarvinPoint(l_px, l_point.y+1));
+    			}
+    		}
+    	}    
+    	
+    	if(tileImage != null){
+			/* Plugin not ported yet. */
+			/*
+    		var p = MarvinPluginLoader.loadImagePlugin("org.marvinproject.image.texture.tileTexture.jar");
+    		p.setAttribute("lines", (int)(Math.ceil((double)imgOut.getHeight()/tileImage.getHeight())));
+    		p.setAttribute("columns", (int)(Math.ceil((double)imgOut.getWidth()/tileImage.getWidth())));
+    		p.setAttribute("tile", tileImage);
+    		MarvinImageMask newMask = new MarvinImageMask(fillMask);    		
+    		p.process(imgOut, imgOut, null, newMask, false);
+			*/
+    	}
+    	else{
+    		for(var j=0; j<imgOut.getHeight(); j++){
+    			for(var i=0; i<imgOut.getWidth(); i++){
+    				if(fillMask[i][j]){
+    					imgOut.setIntColor(i, j, newColor);
+    				}
+    			}
+    		}
+    	}
+    };
+	
+	BoundaryFill.prototype.match = function(image, x, y, targetRed, targetGreen, targetBlue, threshold){
+		var diff = Math.abs(image.getIntComponent0(x, y) - targetRed) + Math.abs(image.getIntComponent1(x, y) - targetGreen) + Math.abs(image.getIntComponent2(x, y) - targetBlue);
+		return (diff <= threshold);
+	};
+
 MarvinAbstractImagePlugin = new Object();
 
 MarvinAbstractImagePlugin.super = function(ref){
@@ -1334,6 +1530,36 @@ MarvinAbstractImagePlugin.setAttribute = function(label, value){
 MarvinAbstractImagePlugin.getAttribute = function(label, value){
 	return this.attributes[label];
 };
+	function Closing(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+
+	Closing.prototype.load = function(){
+		this.matrix = MarvinJSUtils.createMatrix2D(3,3,true);
+		this.setAttribute("matrix",3);
+	};
+
+	
+	Closing.prototype.process = function
+	(
+		imgIn, 
+		imgOut,
+		attributesOut,
+		mask, 
+		previewMode
+	)
+	{	
+		var matrix = this.getAttribute("matrix");
+		
+		if(imgIn.getColorModel() == MarvinImage.COLOR_MODEL_BINARY && matrix != null){
+
+			Marvin.morphologicalDilation(imgIn, imgOut, matrix);
+			MarvinImage.copyColorArray(imgOut, imgIn);
+			Marvin.morphologicalErosion(imgIn, imgOut, matrix);
+		}
+	};
+
 	function Dilation(){
 		MarvinAbstractImagePlugin.super(this);
 		this.load();
@@ -1347,8 +1573,8 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 
 	Dilation.prototype.process = function
 	(
-		imageIn, 
-		imageOut,
+		imgIn, 
+		imgOut,
 		attributesOut,
 		mask, 
 		previewMode
@@ -1399,12 +1625,6 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 		}
 	}
 
-	@Override
-	public MarvinAttributesPanel getAttributesPanel(){
-		return null;
-	}
-
-}
 
 	function Erosion(){
 		MarvinAbstractImagePlugin.super(this);
@@ -1419,8 +1639,8 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 	
 	Erosion.prototype.process = function
 	(
-		imageIn, 
-		imageOut,
+		imgIn, 
+		imgOut,
 		attributesOut,
 		mask, 
 		previewMode
@@ -1473,6 +1693,115 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 	}
 
 
+	function FloodfillSegmentation(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+
+	FloodfillSegmentation.prototype.load = function(){
+		this.setAttribute("returnType", "MarvinSegment");
+	};
+	
+	FloodfillSegmentation.prototype.process = function
+	(
+		imageIn, 
+		imageOut,
+		attributesOut,
+		mask, 
+		previewMode
+	)
+	{
+		if(attributesOut != null){
+			var returnType = this.getAttribute("returnType");
+			var fillBuffer = imageIn.clone();
+			var segments = this.floodfillSegmentation(imageIn, fillBuffer);
+			
+			switch(returnType){
+				case "MarvinSegment":
+					attributesOut.set("segments", segments);
+					break;
+				case "MarvinBlobSegment":
+					attributesOut.set("blobSegments", blobSegments(fillBuffer, segments));
+					break;
+			}
+		}
+	};
+	
+	FloodfillSegmentation.prototype.floodfillSegmentation = function(image, fillBuffer){
+		fillBuffer.clear(0xFF000000);
+		
+		var currentColor=1;
+		for(var y=0; y<image.getHeight(); y++){
+			for(var x=0; x<image.getWidth(); x++){
+				
+				var color = fillBuffer.getIntColor(x, y);
+				
+				if((color & 0x00FFFFFF) == 0 && image.getAlphaComponent(x, y) > 0){
+					var c = 0xFF000000 | (currentColor++);
+					Marvin.boundaryFill(image, fillBuffer, x, y, c);
+				}
+			}
+		}
+		
+		var segments = new Array(currentColor-1);
+		var seg;
+		for(var y=0; y<fillBuffer.getHeight(); y++){
+			for(var x=0; x<fillBuffer.getWidth(); x++){
+				var color = (fillBuffer.getIntColor(x, y) & 0x00FFFFFF);
+				
+				if(color != 0x00FFFFFF && color > 0){
+					
+					seg = segments[color-1];
+					
+					if(seg == null){
+						seg = new MarvinSegment();
+						segments[color-1] = seg;
+					}
+					
+					// x and width
+					if(seg.x1 == -1 || x < seg.x1)	{		seg.x1 = x;		}
+					if(seg.x2 == -1 || x > seg.x2)	{		seg.x2 = x;		}
+					seg.width = (seg.x2-seg.x1)+1;
+					
+					// y and height;
+					if(seg.y1 == -1 || y < seg.y1)	{		seg.y1 = y;		}
+					if(seg.y2 == -1 || y > seg.y2)	{		seg.y2 = y;		}
+					seg.height = (seg.y2-seg.y1)+1;
+					
+					seg.area++;
+				}
+			}
+		}
+		
+		return segments;
+	}
+	
+	FloodfillSegmentation.prototype.blobSegments = function(image, segments){
+		
+		var blobSegments = new Array(segments.length);
+		
+		var colorSegment;
+		var seg;
+		for(var i=0; i<segments.length; i++){
+			seg = segments[i];
+			colorSegment = 0xFF000000 + (i+1);
+			
+			blobSegments[i] = new MarvinBlobSegment(seg.x1, seg.y1);
+			var tempBlob = new MarvinBlob(seg.width, seg.height);
+			blobSegments[i].setBlob(tempBlob);
+			
+			for(var y=seg.y1; y<=seg.y2; y++){
+				for(var x=seg.x1; x<=seg.x2; x++){
+					if(image.getIntColor(x,y) == colorSegment){
+						tempBlob.setValue(x-seg.x1, y-seg.y1, true);
+					}
+				}
+			}
+			
+		}
+		return blobSegments;
+	};
+
 	function Scale(){
 		MarvinAbstractImagePlugin.super(this);
 		this.load();
@@ -1511,13 +1840,58 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 		        for (var j=0;j<newWidth;j++) {
 		            x2 = Math.floor((j*x_ratio)>>16) ;
 		            y2 = Math.floor((i*y_ratio)>>16) ;
-		            imageOut.setIntColor(j,i, imageIn.getAlphaComponent(x2,y2), imageIn.getIntColor(x2,y2));
+		            imageOut.setIntColor(j,i, 255, imageIn.getIntColor(x2,y2));
 		        }                
 		    }	    
 		}
 	};
 	
-	marvinLoadPluginMethods = function(callback){
+	
+	function MarvinAttributes(){
+		this.hashAttributes = new Object();
+	}
+
+	MarvinAttributes.prototype.set = function(name, value){
+		this.hashAttributes[name] = value;
+	};
+	
+	MarvinAttributes.prototype.get = function(name, defaultValue){
+		var ret = this.hashAttributes[name];
+		
+		if(ret != null){
+			return ret;
+		}
+		return defaultValue;
+	};
+	
+	MarvinAttributes.prototype.clone = function(){
+		var attrs = new MarvinAttributes();
+		
+		for(var key in this.hashAttributes){
+			attrs.set(key, this.hashAttributes[key]);
+		}
+		return attrs;
+	};
+function MarvinPoint(x,y){
+	this.x = x;
+	this.y = y;
+}
+
+MarvinPoint.prototype.setX = function(x){
+	this.x = x;
+};
+
+MarvinPoint.prototype.getX = function(){
+	return this.x;
+};
+
+MarvinPoint.prototype.setY = function(x){
+	this.y = y;
+};
+
+MarvinPoint.prototype.getY = function(){
+	return this.y;
+};marvinLoadPluginMethods = function(callback){
 	Marvin.plugins = new Object();
 	
 	// Alpha Boundary
@@ -1532,6 +1906,17 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 	Marvin.blackAndWhite = function(imageIn, imageOut, level){
 		Marvin.plugins.blackAndWhite.setAttribute("level", level);
 		Marvin.plugins.blackAndWhite.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// BoundaryFill
+	Marvin.plugins.boundaryFill = new BoundaryFill();
+	Marvin.boundaryFill = function(imageIn, imageOut, x, y, color, threshold){
+		Marvin.plugins.boundaryFill.setAttribute("x", x);
+		Marvin.plugins.boundaryFill.setAttribute("y", y);
+		Marvin.plugins.boundaryFill.setAttribute("color", color);
+		if(threshold != null){	Marvin.plugins.boundaryFill.setAttribute("threshold", threshold);	}
+		
+		Marvin.plugins.boundaryFill.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
 	// Brightness and Contrast
@@ -1557,10 +1942,19 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 		Marvin.plugins.emboss.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Floodfill Segmentation
+	Marvin.plugins.floodfillSegmentation = new FloodfillSegmentation();
+	Marvin.floodfillSegmentation = function(imageIn){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.floodfillSegmentation.setAttribute("returnType", "MarvinSegment");
+		Marvin.plugins.floodfillSegmentation.process(imageIn, null, attrOut, MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("segments");
+	};
+	
 	// Gaussian Blur
 	Marvin.plugins.gaussianBlur = new GaussianBlur();
 	Marvin.gaussianBlur = function(imageIn, imageOut, radius){
-		Marvin.plugins.gaussianBlur.setAttribute("radius", radius);
+		Marvin.plugins.gaussianBlur.setAttribute("radius", Marvin.getValue(radius, 3.0));
 		Marvin.plugins.gaussianBlur.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
@@ -1583,18 +1977,36 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 		Marvin.plugins.morphologicalDilation.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Morphological Erosion
+	Marvin.plugins.morphologicalErosion = new Erosion();
+	Marvin.morphologicalErosion = function(imageIn, imageOut, matrix){
+		Marvin.plugins.morphologicalErosion.setAttribute("matrix", matrix);
+		Marvin.plugins.morphologicalErosion.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Morphological Closing
+	Marvin.plugins.morphologicalClosing = new Closing();
+	Marvin.morphologicalClosing = function(imageIn, imageOut, matrix){
+		Marvin.plugins.morphologicalClosing.setAttribute("matrix", matrix);
+		Marvin.plugins.morphologicalClosing.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// Prewitt
 	Marvin.plugins.prewitt = new Prewitt();
 	Marvin.prewitt = function(imageIn, imageOut, intensity){
-		if(intensity != null){
-			Marvin.plugins.prewitt.setAttribute("intensity", intensity);
-		}
+		Marvin.plugins.prewitt.setAttribute("intensity", Marvin.getValue(intensity, 1.0));
 		Marvin.plugins.prewitt.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
 	// Scale
 	Marvin.plugins.scale = new Scale();
 	Marvin.scale = function(imageIn, imageOut, newWidth, newHeight){
+	
+		if(newHeight == null){
+			var factor = imageIn.getHeight() / imageIn.getWidth();
+			newHeight = Math.floor(factor * newWidth);
+		}
+	
 		Marvin.plugins.scale.setAttribute("newWidth", newWidth);
 		Marvin.plugins.scale.setAttribute("newHeight", newHeight);
 		Marvin.plugins.scale.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
@@ -1626,4 +2038,13 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 }
 
 var Marvin = new Object();
+
+Marvin.getValue = function(value, defaultValue){
+	if(value != null){
+		return value;
+	} else {
+		return defaultValue;
+	}
+}
+
 marvinLoadPluginMethods();

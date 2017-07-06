@@ -5,6 +5,12 @@ function MarvinImage(width, height, colorModel){
 	this.ctx=null;
 	this.data = null;
 	
+	if(colorModel == null){
+		this.colorModel = MarvinImage.COLOR_MODEL_RGB;
+	} else{
+		this.colorModel = colorModel;
+	}
+	
 	if(width != null){
 		this.create(width, height);
 	}
@@ -60,10 +66,8 @@ MarvinImage.prototype.callbackImageLoaded = function(marvinImage){
 };
 
 MarvinImage.prototype.clone = function(){
-	var image = new MarvinImage(this.getWidth(), this.getHeight());
-	for(var i in this.imageData.data){
-		image.imageData.data[i] = this.imageData.data[i];
-	}
+	var image = new MarvinImage(this.getWidth(), this.getHeight(), this.colorModel);
+	MarvinImage.copyColorArray(this, image);
 	return image;
 };
 
@@ -73,6 +77,10 @@ MarvinImage.prototype.clear = function(color){
 			this.setIntColor(x,y,color);
 		}
 	}
+};
+
+MarvinImage.prototype.getColorModel = function(){
+	return this.colorModel;
 };
 
 MarvinImage.prototype.getAlphaComponent = function(x,y){
@@ -137,6 +145,24 @@ MarvinImage.prototype.getBinaryColor = function(x,y){
 	return this.arrBinaryColor[pos];
 };
 
+MarvinImage.copyColorArray = function(imgSource, imgDestine){
+		
+	if(imgSource.getColorModel() == imgDestine.getColorModel()){
+		switch(imgSource.getColorModel()){
+			case MarvinImage.COLOR_MODEL_RGB:
+				for(var i in imgSource.imageData.data){
+					imgDestine.imageData.data[i] = imgSource.imageData.data[i];
+				}
+				break;
+			case MarvinImage.COLOR_MODEL_BINARY:
+				for(var i in imgSource.arrBinaryColor){
+					imgDestine.arrBinaryColor[i] = imgSource.arrBinaryColor[i];
+				}
+				break;
+		}
+	}
+};
+
 MarvinImage.prototype.drawRect = function(x,y, width, height, color){
 	for(var i=x; i<x+width; i++){
 		this.setIntColor(i, y, color);
@@ -184,6 +210,13 @@ MarvinImage.prototype.getWidth = function(){
 
 MarvinImage.prototype.getHeight = function(){
 	return this.height;
+};
+
+MarvinImage.prototype.isValidPosition = function(x, y){
+	if(x >= 0 && x < this.width && y >= 0 && y < this.height){
+		return true;
+	}
+	return false;
 };
 
 MarvinImage.prototype.draw = function(canvas, x, y){

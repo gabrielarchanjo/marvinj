@@ -11,8 +11,8 @@
 
 	Dilation.prototype.process = function
 	(
-		imageIn, 
-		imageOut,
+		imgIn, 
+		imgOut,
 		attributesOut,
 		mask, 
 		previewMode
@@ -62,4 +62,4 @@
 			}
 		}
 	}
-}
+
