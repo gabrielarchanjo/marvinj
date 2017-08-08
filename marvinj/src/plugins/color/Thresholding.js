@@ -28,20 +28,20 @@
 		previewMode
 	)
 	{
-		threshold = this.getAttribute("threshold");
-		thresholdRange = this.getAttribute("thresholdRange");
-		neighborhood = this.getAttribute("neighborhood");
-		range = this.getAttribute("range");
+		this.threshold = this.getAttribute("threshold");
+		this.thresholdRange = this.getAttribute("thresholdRange");
+		this.neighborhood = this.getAttribute("neighborhood");
+		this.range = this.getAttribute("range");
 		
-		if(thresholdRange == -1){
-			thresholdRange = 255-threshold;
+		if(this.thresholdRange == -1){
+			this.thresholdRange = 255-threshold;
 		}
 		
 		this.pluginGray.process(imageIn, imageOut, attributesOut, mask, previewMode);
 		
 		var bmask = mask.getMask();
 		
-		if(neighborhood == -1 && range == -1){
+		if(this.neighborhood == -1 && this.range == -1){
 			this.hardThreshold(imageIn, imageOut, bmask);
 		}
 		else{
@@ -58,7 +58,7 @@
 				}
 				
 				var gray = imageIn.getIntComponent0(x,y); 
-				if(gray < threshold || gray > threshold+thresholdRange){
+				if(gray < this.threshold || gray > this.threshold+this.thresholdRange){
 					imageOut.setIntColor(x, y, imageIn.getAlphaComponent(x,y), 0,0,0);
 				}
 				else{
@@ -69,7 +69,7 @@
 	}
 	
 	Thresholding.prototype.contrastThreshold = function(imageIn, imageOut){
-		range = 1;
+		this.range = 1;
 		for (var x = 0; x < imageIn.getWidth(); x++) {
 			for (var y = 0; y < imageIn.getHeight(); y++) {
 				if(checkNeighbors(x,y, neighborhood, neighborhood, imageIn)){
