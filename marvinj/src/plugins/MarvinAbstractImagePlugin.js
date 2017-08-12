@@ -1,4 +1,4 @@
-MarvinAbstractImagePlugin = new Object();
+var MarvinAbstractImagePlugin = new Object();
 
 MarvinAbstractImagePlugin.super = function(ref){
 	ref.attributes = {};

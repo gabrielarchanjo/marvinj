@@ -1,4 +1,4 @@
-marvinLoadPluginMethods = function(callback){
+var marvinLoadPluginMethods = function(callback){
 	Marvin.plugins = new Object();
 	
 	// Alpha Boundary

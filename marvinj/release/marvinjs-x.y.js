@@ -501,7 +501,7 @@ MarvinMath.scaleMatrix = function(matrix, scale){
 	return ret;
 };
 
-MarvinMath.euclidianDistance = function(p1, p2, p3, p4, p5, p6){
+MarvinMath.euclideanDistance = function(p1, p2, p3, p4, p5, p6){
 	if(p6 != null){
 		return MarvinMath.euclideanDistance3D(p1, p2, p3, p4, p5, p6);
 	} else{
@@ -509,7 +509,7 @@ MarvinMath.euclidianDistance = function(p1, p2, p3, p4, p5, p6){
 	}
 };
 
-MarvinMath.euclidianDistance2D = function(x1, y1, x2, y2){
+MarvinMath.euclideanDistance2D = function(x1, y1, x2, y2){
 	var dx = (x1-x2);
 	var dy = (y1-y2);
 	return Math.sqrt( dx*dx + dy*dy);
@@ -1086,20 +1086,20 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 		previewMode
 	)
 	{
-		threshold = this.getAttribute("threshold");
-		thresholdRange = this.getAttribute("thresholdRange");
-		neighborhood = this.getAttribute("neighborhood");
-		range = this.getAttribute("range");
+		this.threshold = this.getAttribute("threshold");
+		this.thresholdRange = this.getAttribute("thresholdRange");
+		this.neighborhood = this.getAttribute("neighborhood");
+		this.range = this.getAttribute("range");
 		
-		if(thresholdRange == -1){
-			thresholdRange = 255-threshold;
+		if(this.thresholdRange == -1){
+			this.thresholdRange = 255-threshold;
 		}
 		
 		this.pluginGray.process(imageIn, imageOut, attributesOut, mask, previewMode);
 		
 		var bmask = mask.getMask();
 		
-		if(neighborhood == -1 && range == -1){
+		if(this.neighborhood == -1 && this.range == -1){
 			this.hardThreshold(imageIn, imageOut, bmask);
 		}
 		else{
@@ -1116,7 +1116,7 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 				}
 				
 				var gray = imageIn.getIntComponent0(x,y); 
-				if(gray < threshold || gray > threshold+thresholdRange){
+				if(gray < this.threshold || gray > this.threshold+this.thresholdRange){
 					imageOut.setIntColor(x, y, imageIn.getAlphaComponent(x,y), 0,0,0);
 				}
 				else{
@@ -1127,7 +1127,7 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 	}
 	
 	Thresholding.prototype.contrastThreshold = function(imageIn, imageOut){
-		range = 1;
+		this.range = 1;
 		for (var x = 0; x < imageIn.getWidth(); x++) {
 			for (var y = 0; y < imageIn.getHeight(); y++) {
 				if(checkNeighbors(x,y, neighborhood, neighborhood, imageIn)){
@@ -1824,10 +1824,10 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 	{
 		
 		if(!previewMode){
-			width = imageIn.getWidth();
-			height = imageIn.getHeight();
-			newWidth = this.getAttribute("newWidth");
-			newHeight = this.getAttribute("newHeight");
+			var width = imageIn.getWidth();
+			var height = imageIn.getHeight();
+			var newWidth = this.getAttribute("newWidth");
+			var newHeight = this.getAttribute("newHeight");
 			
 			if(imageOut.getWidth() != newWidth || imageOut.getHeight() != newHeight){
 				imageOut.setDimension(newWidth, newHeight);
@@ -1840,7 +1840,7 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 		        for (var j=0;j<newWidth;j++) {
 		            x2 = Math.floor((j*x_ratio)>>16) ;
 		            y2 = Math.floor((i*y_ratio)>>16) ;
-		            imageOut.setIntColor(j,i, 255, imageIn.getIntColor(x2,y2));
+		            imageOut.setIntColor(j,i, imageIn.getAlphaComponent(x2,y2), imageIn.getIntColor(x2,y2));
 		        }                
 		    }	    
 		}
