@@ -43,10 +43,26 @@ var marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.colorChannel.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Color Channel
+	Marvin.plugins.crop = new Crop();
+	Marvin.crop = function(imageIn, imageOut, x, y, width, height){
+		Marvin.plugins.crop.setAttribute("x", x);
+		Marvin.plugins.crop.setAttribute("y", y);
+		Marvin.plugins.crop.setAttribute("width", width);
+		Marvin.plugins.crop.setAttribute("height", height);
+		Marvin.plugins.crop.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// Emboss
 	Marvin.plugins.emboss = new Emboss();
 	Marvin.emboss = function(imageIn, imageOut){
 		Marvin.plugins.emboss.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Emboss
+	Marvin.plugins.halftoneErrorDiffusion = new ErrorDiffusion();
+	Marvin.halftoneErrorDiffusion = function(imageIn, imageOut){
+		Marvin.plugins.halftoneErrorDiffusion.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
 	// Floodfill Segmentation
@@ -75,6 +91,16 @@ var marvinLoadPluginMethods = function(callback){
 	Marvin.plugins.grayScale = new GrayScale();
 	Marvin.grayScale = function(imageIn, imageOut){
 		Marvin.plugins.grayScale.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Moravec
+	Marvin.plugins.moravec = new Moravec();
+	Marvin.moravec = function(imageIn, imageOut, matrixSize, threshold){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.moravec.setAttribute("matrixSize", matrixSize);
+		Marvin.plugins.moravec.setAttribute("threshold", threshold);
+		Marvin.plugins.moravec.process(imageIn, imageOut, attrOut, MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("cornernessMap");
 	};
 	
 	// Morphological Dilation

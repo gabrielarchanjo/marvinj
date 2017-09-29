@@ -1341,6 +1341,102 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 		imageOut.setIntColor(x, y, imageIn.getAlphaComponent(x, y), Math.floor(resultRed), Math.floor(resultGreen), Math.floor(resultBlue));
 	};
 
+	function Moravec(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+
+	Moravec.prototype.load = function(){
+		this.setAttribute("matrixSize", 3);
+		this.setAttribute("threshold", 0);
+	}
+
+	Moravec.prototype.process = function
+	(
+		imageIn, 
+		imageOut,
+		attrOut,
+		mask, 
+		previewMode
+	)
+	{
+		var matrixSize = this.getAttribute("matrixSize");
+		var threshold = this.getAttribute("threshold");
+		
+		var tempImage = new MarvinImage(imageIn.getWidth(), imageIn.getHeight());
+		Marvin.grayScale(imageIn, tempImage);
+		
+		var cornernessMap = MarvinJSUtils.createMatrix2D(tempImage.getWidth(), tempImage.getHeight(), 0);
+		var cornernessMapOut = MarvinJSUtils.createMatrix2D(tempImage.getWidth(), tempImage.getHeight(), 0);
+		
+		for(var y=0; y<tempImage.getHeight(); y++){
+			for(var x=0; x<tempImage.getWidth(); x++){
+				cornernessMap[x][y] = this.c(x,y,matrixSize,tempImage);
+				
+				if(cornernessMap[x][y] < threshold){
+					cornernessMap[x][y] = 0;
+				}
+			}
+		}
+		
+		for(var x=0; x<cornernessMap.length; x++){
+			for(var y=0; y<cornernessMap[x].length; y++){
+				cornernessMapOut[x][y] = this.nonmax(x,y,matrixSize,cornernessMap);
+				
+				if(cornernessMapOut[x][y] > 0){
+					cornernessMapOut[x][y] = 1;
+				}
+			}
+		}
+		
+		if(attrOut != null){
+			attrOut.set("cornernessMap", cornernessMapOut);
+		}
+	}
+	
+	Moravec.prototype.nonmax = function(x, y, matrixSize, matrix){
+		var s = Math.floor(matrixSize/2);
+		if(x-(s+1) >= 0 && x+(s+1) < matrix.length && y-(s+1) >= 0 && y+(s+1) < matrix[0].length){
+			for(var i=-s; i<=s; i++){
+				for(var j=-s; j<=s; j++){
+					if(i != 0 || j != 0){
+						if(matrix[x][y] < matrix[x+i][y+j]){
+							return 0;
+						}
+					}
+				}
+			}
+		}
+		return matrix[x][y];
+	}
+	
+	Moravec.directions = [[1,0], [-1, 0], [0, 1], [0,-1], [-1,-1], [1, -1], [-1, 1], [1,1]];
+	
+	Moravec.prototype.c = function(x, y, matrixSize, image){
+		
+		var ret = -1;
+		var temp;
+		var s = Math.floor(matrixSize/2);
+		if(x-(s+1) >= 0 && x+(s+1) < image.getWidth() && y-(s+1) >= 0 && y+(s+1) < image.getHeight()){
+			
+			for(var d=0; d<Moravec.directions.length; d++){
+				temp=0;
+				for(var i=-s; i<=s; i++){
+					for(var j=-s; j<=s; j++){
+						temp += Math.pow(image.getIntComponent0(x+i, y+j)-image.getIntComponent0(x+i+Moravec.directions[d][0],y+j+Moravec.directions[d][1]), 2);
+					}
+				}
+				if(ret == -1 || temp < ret){
+					ret = temp;
+				}
+			}
+			
+		}
+		return ret;
+	}
+
+
+
 
 
 /**
@@ -1515,7 +1611,93 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 		return (diff <= threshold);
 	};
 
-MarvinAbstractImagePlugin = new Object();
+	function ErrorDiffusion(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+
+	ErrorDiffusion.prototype.load = function(){
+		this.threshold = 128;
+	}
+	
+	ErrorDiffusion.prototype.process = function
+	(
+		imageIn, 
+		imageOut,
+		attributesOut,
+		mask, 
+		previewMode
+	)
+	{
+		var color;
+		var dif;
+
+		Marvin.grayScale(imageIn, imageOut, attributesOut, mask, previewMode);
+		
+		// Mask
+		var l_arrMask;
+		if(mask != null){
+			l_arrMask = mask.getMask();
+		}
+		
+		for (var y = 0; y < imageOut.getHeight(); y++) {
+			for (var x = 0; x < imageOut.getWidth(); x++) {
+				if(l_arrMask != null && !l_arrMask[x][y]){
+					continue;
+				}
+				
+				var color = imageOut.getIntComponent0(x, y);
+				if(color > this.threshold){
+					imageOut.setIntColor(x,y,imageIn.getAlphaComponent(x,y), 255,255,255);
+					dif = -(255-color);
+				}
+				else{
+					imageOut.setIntColor(x,y,imageIn.getAlphaComponent(x,y), 0,0,0);
+					dif = color;
+				}
+
+				// Pixel Right
+				if(x+1 < imageOut.getWidth()){
+					color = imageOut.getIntComponent0(x+1,y);
+					color+= Math.floor(0.4375*dif);
+					color = this.getValidGray(color); 
+					imageOut.setIntColor(x+1,y,imageIn.getAlphaComponent(x+1,y), color,color,color);
+
+					// Pixel Right Down
+					if(y+1 < imageOut.getHeight()){
+						color = imageOut.getIntComponent0(x+1,y+1);
+						color+=Math.floor(0.0625*dif);
+						color = this.getValidGray(color); 
+						imageOut.setIntColor(x+1,y+1,imageIn.getAlphaComponent(x+1,y+1), color,color,color);
+					}
+				}
+
+				// Pixel Down
+				if(y+1 < imageOut.getHeight()){
+					color = imageOut.getIntComponent0(x,y+1);
+					color+=Math.floor(0.3125*dif);
+					color = this.getValidGray(color); 
+					imageOut.setIntColor(x,y+1,imageIn.getAlphaComponent(x,y+1), color,color,color);
+
+					// Pixel Down Left
+					if(x-1 >= 0){
+						color = imageOut.getIntComponent0(x-1,y+1);
+						color+=Math.floor(0.1875*dif);
+						color = this.getValidGray(color); 
+						imageOut.setIntColor(x-1,y+1,imageIn.getAlphaComponent(x-1,y+1), color,color,color);
+					}
+				}
+			}
+		}
+	}
+
+	ErrorDiffusion.prototype.getValidGray = function(a_value){
+		if(a_value < 0) return 0;
+		if(a_value > 255) return 255;
+		return a_value;
+	}
+
+var MarvinAbstractImagePlugin = new Object();
 
 MarvinAbstractImagePlugin.super = function(ref){
 	ref.attributes = {};
@@ -1691,6 +1873,42 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 			}
 		}
 	}
+
+
+	function Crop(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+
+	Crop.prototype.load = function(){
+		this.setAttribute("x", 0);
+		this.setAttribute("y", 0);
+		this.setAttribute("width", 0);
+		this.setAttribute("height", 0);
+	};
+	
+	Crop.prototype.process = function
+	(
+		imageIn, 
+		imageOut,
+		attributesOut,
+		mask, 
+		previewMode
+	)
+    {
+		var x = this.getAttribute("x");
+		var y = this.getAttribute("y");
+		var width = this.getAttribute("width");
+		var height = this.getAttribute("height");
+		
+		imageOut.setDimension(width, height);
+		
+		for(var i=x; i<x+width; i++){
+			for(var j=y; j<y+height; j++){
+				imageOut.setIntColor(i-x, j-y, imageIn.getIntColor(i, j));
+			}
+		}
+    };
 
 
 	function FloodfillSegmentation(){
@@ -1891,7 +2109,7 @@ MarvinPoint.prototype.setY = function(x){
 
 MarvinPoint.prototype.getY = function(){
 	return this.y;
-};marvinLoadPluginMethods = function(callback){
+};var marvinLoadPluginMethods = function(callback){
 	Marvin.plugins = new Object();
 	
 	// Alpha Boundary
@@ -1936,10 +2154,26 @@ MarvinPoint.prototype.getY = function(){
 		Marvin.plugins.colorChannel.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Color Channel
+	Marvin.plugins.crop = new Crop();
+	Marvin.crop = function(imageIn, imageOut, x, y, width, height){
+		Marvin.plugins.crop.setAttribute("x", x);
+		Marvin.plugins.crop.setAttribute("y", y);
+		Marvin.plugins.crop.setAttribute("width", width);
+		Marvin.plugins.crop.setAttribute("height", height);
+		Marvin.plugins.crop.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// Emboss
 	Marvin.plugins.emboss = new Emboss();
 	Marvin.emboss = function(imageIn, imageOut){
 		Marvin.plugins.emboss.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Emboss
+	Marvin.plugins.halftoneErrorDiffusion = new ErrorDiffusion();
+	Marvin.halftoneErrorDiffusion = function(imageIn, imageOut){
+		Marvin.plugins.halftoneErrorDiffusion.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
 	// Floodfill Segmentation
@@ -1968,6 +2202,16 @@ MarvinPoint.prototype.getY = function(){
 	Marvin.plugins.grayScale = new GrayScale();
 	Marvin.grayScale = function(imageIn, imageOut){
 		Marvin.plugins.grayScale.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Moravec
+	Marvin.plugins.moravec = new Moravec();
+	Marvin.moravec = function(imageIn, imageOut, matrixSize, threshold){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.moravec.setAttribute("matrixSize", matrixSize);
+		Marvin.plugins.moravec.setAttribute("threshold", threshold);
+		Marvin.plugins.moravec.process(imageIn, imageOut, attrOut, MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("cornernessMap");
 	};
 	
 	// Morphological Dilation
