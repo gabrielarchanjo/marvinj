@@ -150,14 +150,10 @@ MarvinImage.copyColorArray = function(imgSource, imgDestine){
 	if(imgSource.getColorModel() == imgDestine.getColorModel()){
 		switch(imgSource.getColorModel()){
 			case MarvinImage.COLOR_MODEL_RGB:
-				for(var i in imgSource.imageData.data){
-					imgDestine.imageData.data[i] = imgSource.imageData.data[i];
-				}
+				imgDestine.imageData.data = imgSource.imageData.data.slice(0);
 				break;
 			case MarvinImage.COLOR_MODEL_BINARY:
-				for(var i in imgSource.arrBinaryColor){
-					imgDestine.arrBinaryColor[i] = imgSource.arrBinaryColor[i];
-				}
+				imgDestine.arrBinaryColor = imgSource.arrBinaryColor.slice(0);
 				break;
 		}
 	}
