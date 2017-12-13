@@ -88,6 +88,12 @@ MarvinImage.prototype.getAlphaComponent = function(x,y){
 	return this.imageData.data[start+3];
 };
 
+
+MarvinImage.prototype.setAlphaComponent = function(x,y, alpha){
+	var start = ((y*this.getWidth())+x)*4; 
+	this.imageData.data[start+3] = alpha;
+};
+
 MarvinImage.prototype.getIntComponent0 = function(x,y){
 	var start = ((y*this.getWidth())+x)*4; 
 	return this.imageData.data[start];
@@ -185,6 +191,26 @@ MarvinImage.prototype.fillRect = function(x,y, width, height, color){
 	}
 };
 
+MarvinImage.prototype.setColorToAlpha = function(alpha, color){
+	for(var y=0; y<this.height; y++){
+		for(var x=0; x<this.width; x++){
+			if((this.getIntColor(x,y) & 0x00FFFFFF) == (color & 0x00FFFFFF)){
+				this.setAlphaComponent(x,y,alpha);
+			}
+		}
+	}
+};
+
+MarvinImage.prototype.setAlphaToColor = function(color){
+	for(var y=0; y<this.height; y++){
+		for(var x=0; x<this.width; x++){
+			if(this.getAlphaComponent(x, y) == 0){
+				this.setIntColor(x, y, 0xFFFFFFFF);
+			}
+		}
+	}
+};
+
 MarvinImage.prototype.setIntColor2 = function(x,y, alpha, color){
 	var r = (color & 0x00FF0000) >> 16;
 	var g = (color & 0x0000FF00) >> 8;
@@ -219,8 +245,20 @@ MarvinImage.prototype.isValidPosition = function(x, y){
 	return false;
 };
 
-MarvinImage.prototype.draw = function(canvas, x, y){
+MarvinImage.prototype.draw = function(canvas, x, y, alphaCombination){
 	if(x == null){x=0;}
 	if(y == null){y=0;}
-	canvas.getContext("2d").putImageData(this.imageData, x,y);
+	canvas.getContext("2d").putImageData(this.imageData, x,y);/*
+	if(alphaCombination == null || !alphaCombination){
+		canvas.getContext("2d").putImageData(this.imageData, x,y);
+	} else{
+		this.imageData = this.ctx.getImageData(0, 0, width, height);
+		var c = document.createElement('canvas');
+		c.width = this.width;
+		c.height = this.height;
+		c.getContext('2d').putImageData(this.imageData,x,y); 
+		var img = new Image();
+		img.src = c.toDataURL();
+		canvas.getContext("2d").drawImage(img, x, y);
+	}*/
 };
