@@ -8,6 +8,14 @@ var marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.alphaBoundary.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Average Color
+	Marvin.plugins.averageColor = new AverageColor();
+	Marvin.averageColor = function(imageIn){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.averageColor.process(imageIn, null, attrOut, MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("averageColor");
+	};
+	
 	// Black And White
 	Marvin.plugins.blackAndWhite = new BlackAndWhite();
 	Marvin.blackAndWhite = function(imageIn, imageOut, level){

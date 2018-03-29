@@ -712,6 +712,45 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 	};
 
 
+	function AverageColor(){
+		MarvinAbstractImagePlugin.super(this);
+		this.load();
+	}
+
+	AverageColor.prototype.load = function(){
+	};
+	
+	AverageColor.prototype.process = function
+	(
+		imageIn, 
+		imageOut,
+		attributesOut,
+		mask, 
+		previewMode
+	)
+	{
+		
+		var totalR=0;
+		var totalG=0;
+		var totalB=0;
+		
+		for (var x = 0; x < imageIn.getWidth(); x++) {
+			for (var y = 0; y < imageIn.getHeight(); y++) {
+				totalR += imageIn.getIntComponent0(x,y);
+				totalG += imageIn.getIntComponent1(x,y);
+				totalB += imageIn.getIntComponent2(x,y);
+			}
+		}
+		
+		var totalPixels = imageIn.getWidth()*imageIn.getHeight();
+		totalR = Math.round(totalR/totalPixels);
+		totalG = Math.round(totalG/totalPixels);
+		totalB = Math.round(totalB/totalPixels);
+		
+		if(attributesOut != null){
+			attributesOut.set("averageColor", [totalR, totalG, totalB]);
+		}
+	};
 
 	function BlackAndWhite(){
 		MarvinAbstractImagePlugin.super(this);
@@ -2155,6 +2194,14 @@ MarvinPoint.prototype.getY = function(){
 	Marvin.alphaBoundary = function(imageIn, imageOut, radius){
 		Marvin.plugins.alphaBoundary.setAttribute(radius)
 		Marvin.plugins.alphaBoundary.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	// Average Color
+	Marvin.plugins.averageColor = new AverageColor();
+	Marvin.averageColor = function(imageIn){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.averageColor.process(imageIn, null, attrOut, MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("averageColor");
 	};
 	
 	// Black And White
