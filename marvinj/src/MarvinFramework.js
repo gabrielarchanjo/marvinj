@@ -61,6 +61,15 @@ var marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.crop.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// Combine by Alpha
+	Marvin.plugins.combineByAlpha = new CombineByAlpha();
+	Marvin.combineByAlpha = function(imageIn, imageOther, imageOut, x, y){
+		Marvin.plugins.combineByAlpha.setAttribute("imageOther", imageOther);
+		Marvin.plugins.combineByAlpha.setAttribute("x", x);
+		Marvin.plugins.combineByAlpha.setAttribute("y", y);
+		Marvin.plugins.combineByAlpha.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// Emboss
 	Marvin.plugins.emboss = new Emboss();
 	Marvin.emboss = function(imageIn, imageOut){
