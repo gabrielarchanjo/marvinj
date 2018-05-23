@@ -71,6 +71,10 @@ MarvinImage.prototype.clone = function(){
 	return image;
 };
 
+MarvinImage.prototype.update = function(color){
+	this.canvas.getContext("2d").putImageData(this.imageData, 0,0);
+};
+
 MarvinImage.prototype.clear = function(color){
 	for(var y=0; y<this.getHeight(); y++){
 		for(var x=0; x<this.getWidth(); x++){
