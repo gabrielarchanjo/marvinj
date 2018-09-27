@@ -104,6 +104,13 @@ var marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.invertColors.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	Marvin.plugins.iteratedFunctionSystem = new IteratedFunctionSystem();
+	Marvin.iteratedFunctionSystem = function(imageIn, imageOut, rules, iterations){
+		Marvin.plugins.iteratedFunctionSystem.setAttribute("rules", rules);
+		Marvin.plugins.iteratedFunctionSystem.setAttribute("iterations", iterations);
+		Marvin.plugins.iteratedFunctionSystem.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
 	// GrayScale
 	Marvin.plugins.grayScale = new GrayScale();
 	Marvin.grayScale = function(imageIn, imageOut){
