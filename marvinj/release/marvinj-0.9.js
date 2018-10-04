@@ -2159,6 +2159,7 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 	}
 
 	IteratedFunctionSystem.prototype.loadRules = function(){
+		this.rules = [];
 		var r = this.getAttribute("rules").split("\n");
 		
 		for(var i=0; i<r.length; i++){
@@ -2220,39 +2221,6 @@ MarvinAbstractImagePlugin.getAttribute = function(label, value){
 		point[0] = nx;
 		point[1] = ny;
 	};
-
-/*
-class Rule {
-	
-	public double	a,
-					b,
-					c,
-					d,
-					e,
-					f,
-					probability;
-	
-	public Rule
-	(
-		double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double probability
-	)
-	{
-		this.a = a;
-		this.b = b;
-		this.c = c;
-		this.d = d;
-		this.e = e;
-		this.f = f;
-		this.probability = probability;
-	}
-}
-*/
 
 	function Crop(){
 		MarvinAbstractImagePlugin.super(this);
