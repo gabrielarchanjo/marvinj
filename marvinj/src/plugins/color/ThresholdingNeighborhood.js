@@ -18,9 +18,9 @@
 		previewMode
 	)
 	{
-		var neighborhoodSide = getAttribute("neighborhoodSide");
-		var samplingPixelDistance = getAttribute("samplingPixelDistance");
-		var thresholdPercentageOfAverage = getAttribute("thresholdPercentageOfAverage");
+		var neighborhoodSide = this.getAttribute("neighborhoodSide");
+		var samplingPixelDistance = this.getAttribute("samplingPixelDistance");
+		var thresholdPercentageOfAverage = this.getAttribute("thresholdPercentageOfAverage");
 		
 		for(var y=0; y<imageIn.getHeight(); y++){
 			for(var x=0; x<imageIn.getWidth(); x++){
