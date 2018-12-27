@@ -82,6 +82,18 @@ var marvinLoadPluginMethods = function(callback){
 		Marvin.plugins.halftoneErrorDiffusion.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	
+	// FindTextRegions
+	Marvin.plugins.findTextRegions = new FindTextRegions();
+	Marvin.findTextRegions = function(imageIn, maxWhiteSpace, maxFontLineWidth, minTextWidth, grayScaleThreshold){
+		var attrOut = new MarvinAttributes();
+		Marvin.plugins.findTextRegions.setAttribute("maxWhiteSpace", Marvin.getValue(maxWhiteSpace, 10));
+		Marvin.plugins.findTextRegions.setAttribute("maxFontLineWidth", Marvin.getValue(maxFontLineWidth, 10));
+		Marvin.plugins.findTextRegions.setAttribute("minTextWidth", Marvin.getValue(minTextWidth, 30));
+		Marvin.plugins.findTextRegions.setAttribute("grayScaleThreshold", Marvin.getValue(grayScaleThreshold, 127));
+		Marvin.plugins.findTextRegions.process(imageIn, null, attrOut,  MarvinImageMask.NULL_MASK, false);
+		return attrOut.get("matches");
+	};
+	
 	// Floodfill Segmentation
 	Marvin.plugins.floodfillSegmentation = new FloodfillSegmentation();
 	Marvin.floodfillSegmentation = function(imageIn){
@@ -115,6 +127,13 @@ var marvinLoadPluginMethods = function(callback){
 	Marvin.plugins.grayScale = new GrayScale();
 	Marvin.grayScale = function(imageIn, imageOut){
 		Marvin.plugins.grayScale.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
+	};
+	
+	//Merge Photos
+	Marvin.plugins.mergePhotos = new MergePhotos();
+	Marvin.mergePhotos = function(images, imageOut, threshold){
+		Marvin.plugins.mergePhotos.setAttribute("threshold", threshold);
+		Marvin.plugins.mergePhotos.process(images, imageOut);
 	};
 	
 	// Moravec
