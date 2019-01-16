@@ -4,7 +4,7 @@ var marvinLoadPluginMethods = function(callback){
 	// Alpha Boundary
 	Marvin.plugins.alphaBoundary = new AlphaBoundary();
 	Marvin.alphaBoundary = function(imageIn, imageOut, radius){
-		Marvin.plugins.alphaBoundary.setAttribute(radius)
+		Marvin.plugins.alphaBoundary.setAttribute("radius", radius)
 		Marvin.plugins.alphaBoundary.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	

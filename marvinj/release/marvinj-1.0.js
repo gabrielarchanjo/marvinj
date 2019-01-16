@@ -316,7 +316,7 @@ MarvinImage.prototype.fillRect = function(x,y, width, height, color){
 	}
 };
 
-MarvinImage.prototype.setColorToAlpha = function(alpha, color){
+MarvinImage.prototype.setColorToAlpha = function(color, alpha){
 	for(var y=0; y<this.height; y++){
 		for(var x=0; x<this.width; x++){
 			if((this.getIntColor(x,y) & 0x00FFFFFF) == (color & 0x00FFFFFF)){
@@ -860,7 +860,7 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 		previewMode
 	)
 	{
-		var neighborhood = getAttribute("radius");
+		var neighborhood = this.getAttribute("radius");
 		for(var y=0; y<imageOut.getHeight(); y++){
 			for(var x=0; x<imageOut.getWidth(); x++){
 				this.alphaRadius(imageOut, x, y, neighborhood);
@@ -874,7 +874,7 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 		var newAlpha;
 		var totalAlpha=0;
 		var totalPixels=0;
-		var hn = radius/2;
+		var hn = Math.floor(radius/2);
 		
 		for(var j=y-hn; j<y+hn; j++){
 			for(var i=x-hn; i<x+hn; i++){
@@ -886,7 +886,7 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 			}
 		}
 		
-		newAlpha = totalAlpha/totalPixels;
+		newAlpha = Math.floor(totalAlpha/totalPixels);
 		
 		if(newAlpha < oldAlpha)
 		image.setAlphaComponent(x, y, newAlpha);
@@ -1452,9 +1452,9 @@ MarvinMath.euclideanDistance3D = function(x1, y1, z1, x2, y2, z2){
 		previewMode
 	)
 	{
-		var neighborhoodSide = getAttribute("neighborhoodSide");
-		var samplingPixelDistance = getAttribute("samplingPixelDistance");
-		var thresholdPercentageOfAverage = getAttribute("thresholdPercentageOfAverage");
+		var neighborhoodSide = this.getAttribute("neighborhoodSide");
+		var samplingPixelDistance = this.getAttribute("samplingPixelDistance");
+		var thresholdPercentageOfAverage = this.getAttribute("thresholdPercentageOfAverage");
 		
 		for(var y=0; y<imageIn.getHeight(); y++){
 			for(var x=0; x<imageIn.getWidth(); x++){
@@ -2819,7 +2819,7 @@ MarvinPoint.prototype.getY = function(){
 	// Alpha Boundary
 	Marvin.plugins.alphaBoundary = new AlphaBoundary();
 	Marvin.alphaBoundary = function(imageIn, imageOut, radius){
-		Marvin.plugins.alphaBoundary.setAttribute(radius)
+		Marvin.plugins.alphaBoundary.setAttribute("radius", radius)
 		Marvin.plugins.alphaBoundary.process(imageIn, imageOut, null, MarvinImageMask.NULL_MASK, false);
 	};
 	

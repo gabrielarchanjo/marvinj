@@ -16,7 +16,7 @@
 		previewMode
 	)
 	{
-		var neighborhood = getAttribute("radius");
+		var neighborhood = this.getAttribute("radius");
 		for(var y=0; y<imageOut.getHeight(); y++){
 			for(var x=0; x<imageOut.getWidth(); x++){
 				this.alphaRadius(imageOut, x, y, neighborhood);
@@ -30,7 +30,7 @@
 		var newAlpha;
 		var totalAlpha=0;
 		var totalPixels=0;
-		var hn = radius/2;
+		var hn = Math.floor(radius/2);
 		
 		for(var j=y-hn; j<y+hn; j++){
 			for(var i=x-hn; i<x+hn; i++){
@@ -42,7 +42,7 @@
 			}
 		}
 		
-		newAlpha = totalAlpha/totalPixels;
+		newAlpha = Math.floor(totalAlpha/totalPixels);
 		
 		if(newAlpha < oldAlpha)
 		image.setAlphaComponent(x, y, newAlpha);

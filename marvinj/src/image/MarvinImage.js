@@ -195,7 +195,7 @@ MarvinImage.prototype.fillRect = function(x,y, width, height, color){
 	}
 };
 
-MarvinImage.prototype.setColorToAlpha = function(alpha, color){
+MarvinImage.prototype.setColorToAlpha = function(color, alpha){
 	for(var y=0; y<this.height; y++){
 		for(var x=0; x<this.width; x++){
 			if((this.getIntColor(x,y) & 0x00FFFFFF) == (color & 0x00FFFFFF)){
