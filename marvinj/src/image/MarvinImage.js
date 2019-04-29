@@ -137,6 +137,11 @@ MarvinImage.prototype.getIntColor = function(x,y){
 			(this.imageData.data[start+2]);
 };
 
+MarvinImage.prototype.getIntColorArray = function(x,y){
+	var start = ((y*this.getWidth())+x)*4;
+	return this.imageData.data.slice(start, start+4);
+};
+
 MarvinImage.prototype.setIntColor1 = function(x,y, color){
 	var a = (color & 0xFF000000) >>> 24;
 	var r = (color & 0x00FF0000) >> 16;
