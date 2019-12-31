@@ -1,0 +1,32 @@
+{
+    "name": "marvin",
+    "version": "1.0.1",
+    "description": "Pure Java cross-platform image processing framework that provides features for image and video frame processing, multi-threading image processing, GUI integration, extensibility via plug-ins, unit text automation among other things.",
+    "main": "index.js",
+    "types": "./index.d.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/gabrielarchanjo/marvinj.git"
+    },
+    "keywords": [
+        "MarvinJ",
+        "MarvinImage",
+        "javascript",
+        "image",
+        "processing"
+    ],
+    "author": {
+        "name": "Gabriel Ambrósio Archanjo"
+    },
+    "license": "LGPL",
+    "bugs": {
+        "url": "https://github.com/gabrielarchanjo/marvinj/issues"
+    },
+    "homepage": "https://github.com/gabrielarchanjo/marvinj#readme",
+    "devDependencies": {
+        "tap": "^10.7.2"
+    }
+}

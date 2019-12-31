@@ -50,3 +50,5 @@ marvinproject/dev/.metadata/
 *.class
 *.html
 *.log
+/.vs
+/node_modules
