@@ -7,7 +7,7 @@ If you are not familiar with Marvin Framework and want to play with MarvinJ, don
 In the case of MarvinJ we load images from URLs and usually use a HTML5 canvas for displaying processed images.
 
 ```
-import { Marvin, MarvinImage } from "@rarebearsoft/marvin";
+import { Marvin, MarvinImage } from "marvin";
 
 let canvas = document.getElementById("canvas"),
 	image = new MarvinImage();
