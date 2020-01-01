@@ -3,7 +3,6 @@
     "version": "1.0.1",
     "description": "Pure Java cross-platform image processing framework that provides features for image and video frame processing, multi-threading image processing, GUI integration, extensibility via plug-ins, unit text automation among other things.",
     "main": "index.js",
-    "types": "./index.d.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -18,9 +17,7 @@
         "image",
         "processing"
     ],
-    "author": {
-        "name": "Gabriel Ambrósio Archanjo"
-    },
+    "author": "Gabriel AmbrÃ³sio Archanjo (http://marvinproject.sourceforge.net/en/index.html)",
     "license": "LGPL-3.0",
     "bugs": {
         "url": "https://github.com/gabrielarchanjo/marvinj/issues"
