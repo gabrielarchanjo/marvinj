@@ -32,18 +32,19 @@
 		mg = (vg > 0? mg : 1.0/mg);
 		mb = (vb > 0? mb : 1.0/mb);
 		
-		var red,green,blue;
+		var red,green,blue,alpha;
 		for(var y=0; y<imageIn.getHeight(); y++){
 			for(var x=0; x<imageIn.getWidth(); x++){
 				red = imageIn.getIntComponent0(x, y);
 				green = imageIn.getIntComponent1(x, y);
 				blue = imageIn.getIntComponent2(x, y);
+				alpha = imageIn.getAlphaComponent(x,y);
 				
 				red 	= Math.min(red * mr, 255);
 				green 	= Math.min(green * mg, 255);
 				blue	= Math.min(blue * mb, 255);
 				
-				imageOut.setIntColor(x, y, 255, red, green, blue);
+				imageOut.setIntColor(x, y, alpha, red, green, blue);
 			}
 		}
 	}
